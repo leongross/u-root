@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build !tinygo && !plan9 && !goshsmall && !goshliner
-// +build !tinygo,!plan9,!goshsmall,!goshliner
+//go:build !plan9 && !goshsmall && !goshliner
+// +build !plan9,!goshsmall,!goshliner
 
 package main
 

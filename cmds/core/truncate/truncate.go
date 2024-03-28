@@ -81,7 +81,16 @@ func truncate(args ...string) error {
 		}
 
 		// intentionally ignore, like GNU truncate
-		os.Truncate(fname, final)
+		// * patch tinygo to have os.Truncate (-> patch type file struct and poll fd)
+		//	* which wraps syscall.Truncate `func (fd *FD) Ftruncate(size int64) error {`
+		// * use syscall.Syscall
+		// * add syscall.Truncate to tinygo
+		fd, err := os.Open(fname)
+		if err != nil {
+			return fmt.Errorf("could not open file for truncation: %v", err)
+		}
+
+		fd.Truncate(final)
 	}
 	return nil
 }

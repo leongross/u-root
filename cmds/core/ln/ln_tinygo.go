@@ -1,8 +1,7 @@
 // Copyright 2016-2017 the u-root Authors. All rights reserved
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-//#go:build !tinygo
-//#+build !tinygo
+//+go: build tinygo
 
 // Ln makes links to files.
 //
@@ -134,10 +133,7 @@ func (conf config) ln(args []string) error {
 
 	// In tinygo there is no os.Link, only os.Symlink
 	// TODO: either change this to a softlink, create a flag or add it to tinygo
-	linkFunc := os.Link
-	if conf.symlink {
-		linkFunc = os.Symlink
-	}
+	linkFunc := os.Symlink
 
 	originalPath, err := os.Getwd()
 	if err != nil {

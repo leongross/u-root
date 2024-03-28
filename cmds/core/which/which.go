@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	allPaths = flag.Bool("a", false, "print all matching pathnames of each argument")
+	allPaths = flag.Bool("a", false, "print all matching path names of each argument")
 	verbose  = flag.Bool("v", false, "verbose output")
 )
 
