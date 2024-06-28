@@ -6,6 +6,7 @@ package gzip
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -16,6 +17,16 @@ import (
 type File struct {
 	Options *Options
 	Path    string
+}
+
+// Compression and Decompression functions used by the File.Process method.
+// The implementation depends on the build tags tinygo and !tinygo.
+func Compress(r io.Reader, w io.Writer, level int, blocksize int, processes int) error {
+	return compress(r, w, level, blocksize, processes)
+}
+
+func Decompress(r io.Reader, w io.Writer, blocksize int, processes int) error {
+	return decompress(r, w, blocksize, processes)
 }
 
 // outputPath removes the path suffix on decompress and adds it on compress.
