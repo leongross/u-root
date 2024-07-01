@@ -12,11 +12,13 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/url"
 	"sync"
 	"time"
 
 	"github.com/ishidawataru/sctp"
 	"github.com/mdlayher/vsock"
+	"golang.org/x/net/proxy"
 
 	"github.com/u-root/u-root/pkg/netcat"
 )
@@ -129,21 +131,34 @@ func (c *cmd) establishConnection(network, address string) (net.Conn, error) {
 		}
 	}
 
-	// TLS Support
-	if c.config.SSLConfig.Enabled || c.config.SSLConfig.VerifyTrust {
-		tlsConfig, err := c.config.SSLConfig.GenerateTLSConfiguration()
+	// Proxy Support
+	if c.config.ProxyConfig.Enabled {
+		proxyDialer, err := c.proxyDialer(dialer)
 		if err != nil {
 			return nil, fmt.Errorf("connection: %v", err)
 		}
 
-		conn, err = tls.DialWithDialer(dialer, network, address, tlsConfig)
+		conn, err = proxyDialer.Dial(network, address)
 		if err != nil {
 			return nil, fmt.Errorf("connection: %v", err)
 		}
 	} else {
-		conn, err = dialer.Dial(network, address)
-		if err != nil {
-			return nil, fmt.Errorf("connection: %v", err)
+		// TLS Support
+		if c.config.SSLConfig.Enabled || c.config.SSLConfig.VerifyTrust {
+			tlsConfig, err := c.config.SSLConfig.GenerateTLSConfiguration()
+			if err != nil {
+				return nil, fmt.Errorf("connection: %v", err)
+			}
+
+			conn, err = tls.DialWithDialer(dialer, network, address, tlsConfig)
+			if err != nil {
+				return nil, fmt.Errorf("connection: %v", err)
+			}
+		} else {
+			conn, err = dialer.Dial(network, address)
+			if err != nil {
+				return nil, fmt.Errorf("connection: %v", err)
+			}
 		}
 	}
 
@@ -152,6 +167,21 @@ func (c *cmd) establishConnection(network, address string) (net.Conn, error) {
 	}
 
 	return conn, nil
+}
+
+func (c *cmd) proxyDialer(dialer proxy.Dialer) (proxy.Dialer, error) {
+	var proxyAuth string
+	if c.config.ProxyConfig.Auth != "" {
+		proxyAuth = c.config.ProxyConfig.Auth + "@"
+	}
+
+	proxyAddr := fmt.Sprintf("%v://%v%v", c.config.ProxyConfig.Type, proxyAuth, c.config.ProxyConfig.Address)
+	proxyURL, err := url.Parse(proxyAddr)
+	if err != nil {
+		return nil, fmt.Errorf("invalid proxy URL: %v", err)
+	}
+
+	return proxy.FromURL(proxyURL, dialer)
 }
 
 func (c *cmd) writeToRemote(conn io.Writer) {
