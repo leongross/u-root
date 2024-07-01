@@ -88,7 +88,7 @@ func TestConnectMode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var wg sync.WaitGroup
 
-			l, err := net.Listen("tcp", "127.0.0.1:8080")
+			l, err := net.Listen("tcp", "127.0.0.2:8080")
 			if err != nil {
 				t.Fatal(err)
 			}
