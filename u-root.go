@@ -60,7 +60,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	env := golang.Default(golang.DisableCGO())
+	// env := golang.Default(golang.DisableCGO())
+	env := golang.Default()
 	f := &mkuimage.Flags{
 		Commands:      mkuimage.CommandFlags{Builder: "bb"},
 		ArchiveFormat: "cpio",
