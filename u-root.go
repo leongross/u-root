@@ -27,7 +27,7 @@ var (
 // checkArgs checks for common mistakes that cause confusion.
 //  1. -files as the last argument
 //  2. -files followed by any switch, indicating a shell expansion problem
-//     This is usually caused by Makfiles structured as follows
+//     This is usually caused by Makefile's structured as follows
 //     u-root -files `which ethtool` -files `which bash`
 //     if ethtool is not installed, the expansion yields
 //     u-root -files -files `which bash`
@@ -60,6 +60,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// tinygo needs cgo to be enabled / it cannot be disabled in the environment
 	env := golang.Default(golang.DisableCGO())
 	f := &mkuimage.Flags{
 		Commands:      mkuimage.CommandFlags{Builder: "bb"},
@@ -76,14 +77,16 @@ func main() {
 	flag.Parse()
 
 	// Set defaults.
-	m := []uimage.Modifier{
+	modifier := []uimage.Modifier{
 		uimage.WithReplaceEnv(env),
 		uimage.WithBaseArchive(uimage.DefaultRamfs()),
 		uimage.WithCPIOOutput(defaultFile(env)),
 		uimage.WithInit("init"),
 	}
+
+	// if we use tinygo we cannot use gosh but have to use rush instead
 	if golang.Default().GOOS != "plan9" {
-		m = append(m, uimage.WithShell("gosh"))
+		modifier = append(modifier, uimage.WithShell("gosh"))
 	}
 
 	pkgs := flag.Args()
@@ -94,7 +97,7 @@ func main() {
 	if len(pkgs) == 0 && tf.Config == "" {
 		pkgs = []string{"github.com/u-root/u-root/cmds/core/*"}
 	}
-	if err := mkuimage.CreateUimage(l, m, tf, f, pkgs); err != nil {
+	if err := mkuimage.CreateUimage(l, modifier, tf, f, pkgs); err != nil {
 		l.Errorf("mkuimage error: %v", err)
 		os.Exit(1)
 	}
