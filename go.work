@@ -1,0 +1,12 @@
+go 1.21.12
+
+use (
+	.
+	./workspace/gobusybox/src
+	./workspace/mkuimage
+)
+
+replace (
+	github.com/u-root/gobusybox/src v0.0.0-20240225013946-a274a8d5d83a => ./workspace/gobusybox/src
+	github.com/u-root/mkuimage v0.0.0-20240225063926-11a3bcc79c2a => ./workspace/mkuimage
+)
